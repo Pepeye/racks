@@ -1,23 +1,18 @@
-extern crate hyper;
+extern crate actix_web;
+use actix_web::{server, App, HttpRequest, Responder};
 
-use hyper::{Body, Response, Server};
-use hyper::rt::Future;
-use hyper::service::service_fn_ok;
-
-static TEXT: &str = "Hello, World!";
+fn greet(req: &HttpRequest) -> impl Responder {
+    let to = req.match_info().get("name").unwrap_or("World");
+    format!("Hello {}!", to)
+}
 
 fn main() {
-    let addr = ([127, 0, 0, 1], 3000).into();
-
-    let new_svc = || {
-        service_fn_ok(|_req|{
-            Response::new(Body::from(TEXT))
-        })
-    };
-
-    let server = Server::bind(&addr)
-        .serve(new_svc)
-        .map_err(|e| eprintln!("server error: {}", e));
-
-    hyper::rt::run(server);
+    server::new(|| {
+        App::new()
+            .resource("/", |r| r.f(greet))
+            .resource("/{name}", |r| r.f(greet))
+    })
+    .bind("127.0.0.1:8000")
+    .expect("Can not bind to port 8000")
+    .run();
 }
