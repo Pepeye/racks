@@ -1,4 +1,4 @@
-# P L A Y
+# R A C K S
 ---
 Exploring the rust programing language
 
